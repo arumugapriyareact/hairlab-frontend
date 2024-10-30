@@ -11,3 +11,70 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+
+#sidebar-wrapper {
+  min-height: 100vh;
+  margin-left: -15rem;
+  transition: margin 0.25s ease-out;
+}
+
+#sidebar-wrapper .sidebar-heading {
+  padding: 0.875rem 1.25rem;
+  font-size: 1.2rem;
+}
+
+#sidebar-wrapper .list-group {
+  width: 15rem;
+}
+
+#page-content-wrapper {
+  min-width: 100vw;
+}
+
+#wrapper.toggled #sidebar-wrapper {
+  margin-left: 0;
+}
+
+@media (min-width: 768px) {
+  #sidebar-wrapper {
+      margin-left: 0;
+  }
+
+  #page-content-wrapper {
+      min-width: 0;
+      width: 100%;
+  }
+
+  #wrapper.toggled #sidebar-wrapper {
+      margin-left: -15rem;
+  }
+}
+
+.card {
+  margin-bottom: 20px;
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+
+.card-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+  border-bottom: 2px solid red;
+  padding-bottom: 10px;
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+  padding-top: 20px;
+}
+
+
