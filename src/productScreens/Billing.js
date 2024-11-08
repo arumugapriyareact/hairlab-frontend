@@ -3,320 +3,330 @@ import Sidebar from '../components/Sidebar';
 import Header from "../components/Header";
 
 const BillingManagement = () => {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-    const [services, setServices] = useState([]);
-    const [products, setProducts] = useState([]);
-    const [staffMembers, setStaffMembers] = useState([]);
-    const [availableServices, setAvailableServices] = useState([]);
-    const [availableProducts, setAvailableProducts] = useState([]);
-    const [loading, setLoading] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [staffMembers, setStaffMembers] = useState([]);
+  const [availableServices, setAvailableServices] = useState([]);
+  const [availableProducts, setAvailableProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phoneNumber: '',
-        serviceId: '',
-        serviceStaffId: '',
-        serviceDiscount: '',
-        productId: '',
-        productQuantity: 1,
-        productDiscount: '',
-        tip: '',
-        gstPercentage: '18',
-        cashback: '',
-        paymentMethod: '',
-        amountPaid: ''
-    });
+  // Form data for collecting inputs
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    serviceId: '',
+    serviceStaffId: '',
+    serviceDiscount: '',
+    productId: '',
+    productQuantity: 1,
+    productDiscount: '',
+    tip: '',
+    gstPercentage: '18',
+    cashback: '',
+    paymentMethod: '',
+    amountPaid: ''
+  });
 
-    const [billing, setBilling] = useState({
-        subtotal: 0,
-        gst: 0,
-        tip: 0,
-        grandTotal: 0,
-        finalTotal: 0
-    });
+  // Selected items arrays
+  const [selectedServices, setSelectedServices] = useState([]);
+  const [selectedProducts, setSelectedProducts] = useState([]);
 
-    const [selectedServices, setSelectedServices] = useState([]);
-    const [selectedProducts, setSelectedProducts] = useState([]);
+  // Bill calculations
+  const [billing, setBilling] = useState({
+    subtotal: 0,
+    gst: 0,
+    grandTotal: 0,
+    cashback: 0,
+    finalTotal: 0
+  });
 
-    // Add useEffect for initial data fetching
-    useEffect(() => {
-        fetchStaffMembers();
-        fetchServices();
-        fetchProducts();
-    }, []);
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
 
-    // Add useEffect for bill calculations
-    useEffect(() => {
-        updateBill();
-    }, [selectedServices, selectedProducts, formData.tip, formData.gstPercentage, formData.cashback]);
+  useEffect(() => {
+    calculateBill();
+  }, [selectedServices, selectedProducts, formData.gstPercentage]);
 
-    const fetchStaffMembers = async () => {
-        try {
-            const response = await fetch('http://localhost:5001/api/staff');
-            if (!response.ok) throw new Error('Failed to fetch staff members');
-            const data = await response.json();
-            setStaffMembers(data);
-        } catch (error) {
-            console.error('Error fetching staff:', error);
-            alert('Failed to fetch staff members. Please try again.');
-        }
-    };
+  const fetchInitialData = async () => {
+    try {
+      setLoading(true);
+      await Promise.all([
+        fetchStaffMembers(),
+        fetchServices(),
+        fetchProducts()
+      ]);
+    } catch (error) {
+      console.error('Error fetching initial data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const fetchServices = async () => {
-        try {
-            const response = await fetch('http://localhost:5001/api/services');
-            if (!response.ok) throw new Error('Failed to fetch services');
-            const data = await response.json();
-            setAvailableServices(data);
-        } catch (error) {
-            console.error('Error fetching services:', error);
-            alert('Failed to fetch services. Please try again.');
-        }
-    };
+  const fetchStaffMembers = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/api/staff');
+      if (!response.ok) throw new Error('Failed to fetch staff');
+      const data = await response.json();
+      setStaffMembers(data);
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to fetch staff members');
+    }
+  };
 
-    const fetchProducts = async () => {
-        try {
-            const response = await fetch('http://localhost:5001/api/products');
-            if (!response.ok) throw new Error('Failed to fetch products');
-            const data = await response.json();
-            setAvailableProducts(data);
-        } catch (error) {
-            console.error('Error fetching products:', error);
-            alert('Failed to fetch products. Please try again.');
-        }
-    };
+  const fetchServices = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/api/services');
+      if (!response.ok) throw new Error('Failed to fetch services');
+      const data = await response.json();
+      setAvailableServices(data);
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to fetch services');
+    }
+  };
 
-    const fetchCustomerDetails = async (phoneNumber) => {
-        try {
-            const response = await fetch(`http://localhost:5001/api/customers/phone/${phoneNumber}`);
-            if (response.ok) {
-                const customer = await response.json();
-                setFormData(prev => ({
-                    ...prev,
-                    firstName: customer.firstName || '',
-                    lastName: customer.lastName || '',
-                    email: customer.email || '',
-                    phoneNumber: customer.phoneNumber || phoneNumber
-                }));
-            }
-        } catch (error) {
-            console.error('Error fetching customer details:', error);
-            alert('Failed to fetch customer details. Please try again.');
-        }
-    };
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/api/products');
+      if (!response.ok) throw new Error('Failed to fetch products');
+      const data = await response.json();
+      setAvailableProducts(data);
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to fetch products');
+    }
+  };
 
-    const handleInputChange = (e) => {
-        const { id, value } = e.target;
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+
+    if (id === 'phoneNumber' && value.length === 10) {
+      fetchCustomerDetails(value);
+    }
+  };
+
+  const fetchCustomerDetails = async (phoneNumber) => {
+    try {
+      const response = await fetch(`http://localhost:5001/api/customers/phone/${phoneNumber}`);
+      if (response.ok) {
+        const customer = await response.json();
         setFormData(prev => ({
-            ...prev,
-            [id]: value
+          ...prev,
+          firstName: customer.firstName || '',
+          lastName: customer.lastName || '',
+          email: customer.email || ''
         }));
+      }
+    } catch (error) {
+      console.error('Error fetching customer:', error);
+    }
+  };
 
-        if (id === 'phoneNumber' && value.length === 10) {
-            fetchCustomerDetails(value);
-        }
+  const addService = () => {
+    const service = availableServices.find(s => s._id === formData.serviceId);
+    const staff = staffMembers.find(s => s._id === formData.serviceStaffId);
+
+    if (!service || !staff) {
+      alert('Please select both service and staff member');
+      return;
+    }
+
+    const discount = parseFloat(formData.serviceDiscount) || 0;
+    if (discount > service.price) {
+      alert('Discount cannot be greater than service price');
+      return;
+    }
+
+    const finalPrice = service.price - discount;
+
+    const newService = {
+      name: service.serviceName,
+      price: service.price,
+      staffName: `${staff.firstName} ${staff.lastName}`,
+      finalPrice: Number(finalPrice.toFixed(2)),
+      discount: Number(discount.toFixed(2))
     };
 
-    const addService = () => {
-        const selectedService = availableServices.find(s => s._id === formData.serviceId);
-        const selectedStaff = staffMembers.find(s => s._id === formData.serviceStaffId);
+    setSelectedServices(prev => [...prev, newService]);
+    setFormData(prev => ({
+      ...prev,
+      serviceId: '',
+      serviceStaffId: '',
+      serviceDiscount: ''
+    }));
+  };
 
-        if (selectedService && selectedStaff) {
-            const discount = parseFloat(formData.serviceDiscount) || 0;
-            const finalPrice = Math.max(selectedService.price - discount, 0);
+  const addProduct = () => {
+    const product = availableProducts.find(p => p._id === formData.productId);
 
-            setSelectedServices(prev => [
-                ...prev,
-                {
-                    name: selectedService.serviceName,
-                    price: selectedService.price,
-                    staffName: `${selectedStaff.firstName} ${selectedStaff.lastName}`,
-                    discount: Number(discount.toFixed(2)),
-                    finalPrice: Number(finalPrice.toFixed(2))
-                }
-            ]);
+    if (!product) {
+      alert('Please select a product');
+      return;
+    }
 
-            setFormData(prev => ({
-                ...prev,
-                serviceId: '',
-                serviceStaffId: '',
-                serviceDiscount: ''
-            }));
-        }
+    const quantity = parseInt(formData.productQuantity) || 1;
+    const discountPercentage = parseFloat(formData.productDiscount) || 0;
+
+    if (discountPercentage > 100) {
+      alert('Discount percentage cannot exceed 100%');
+      return;
+    }
+
+    const discount = (product.price * discountPercentage / 100);
+    const finalPrice = (product.price - discount) * quantity;
+
+    const newProduct = {
+      name: product.productName,
+      price: product.price,
+      quantity: quantity,
+      discount: Number(discount.toFixed(2)),
+      discountPercentage: Number(discountPercentage)
     };
 
-    const addProduct = () => {
-        const selectedProduct = availableProducts.find(p => p._id === formData.productId);
+    setSelectedProducts(prev => [...prev, newProduct]);
+    setFormData(prev => ({
+      ...prev,
+      productId: '',
+      productQuantity: 1,
+      productDiscount: ''
+    }));
+  };
 
-        if (selectedProduct) {
-            const quantity = parseInt(formData.productQuantity) || 1;
-            const discountPercentage = parseFloat(formData.productDiscount) || 0;
-            const basePrice = selectedProduct.price * quantity;
-            const discount = (basePrice * discountPercentage) / 100;
-            const finalPrice = Math.max(basePrice - discount, 0);
+  const removeService = (index) => {
+    setSelectedServices(prev => prev.filter((_, i) => i !== index));
+  };
 
-            setSelectedProducts(prev => [
-                ...prev,
-                {
-                    name: selectedProduct.productName,
-                    price: selectedProduct.price,
-                    quantity,
-                    discountPercentage,
-                    discount: Number(discount.toFixed(2)),
-                    finalPrice: Number(finalPrice.toFixed(2))
-                }
-            ]);
+  const removeProduct = (index) => {
+    setSelectedProducts(prev => prev.filter((_, i) => i !== index));
+  };
 
-            setFormData(prev => ({
-                ...prev,
-                productId: '',
-                productQuantity: 1,
-                productDiscount: ''
-            }));
-        }
-    };
+  const calculateBill = () => {
+    const serviceSubtotal = selectedServices.reduce((sum, service) =>
+      sum + service.finalPrice, 0);
 
-    const removeService = (index) => {
-        setSelectedServices(prev => prev.filter((_, i) => i !== index));
-    };
+    const productSubtotal = selectedProducts.reduce((sum, product) =>
+      sum + ((product.price - product.discount) * product.quantity), 0);
 
-    const removeProduct = (index) => {
-        setSelectedProducts(prev => prev.filter((_, i) => i !== index));
-    };
+    const subtotal = serviceSubtotal + productSubtotal;
+    const gst = (subtotal * parseFloat(formData.gstPercentage)) / 100;
+    const grandTotal = subtotal + gst;
 
-    const updateBill = () => {
-        // Calculate service subtotal
-        const serviceSubtotal = selectedServices.reduce((total, service) => {
-            return total + (service.finalPrice || 0);
-        }, 0);
+    setBilling({
+      subtotal: Number(subtotal.toFixed(2)),
+      gst: Number(gst.toFixed(2)),
+      grandTotal: Number(grandTotal.toFixed(2)),
+      cashback: formData.cashback ? Number(formData.cashback) : 0,
+      finalTotal: Number((grandTotal - (formData.cashback || 0)).toFixed(2))
+    });
+  };
 
-        // Calculate product subtotal
-        const productSubtotal = selectedProducts.reduce((total, product) => {
-            return total + (product.finalPrice || 0);
-        }, 0);
+  const validateForm = () => {
+    if (!formData.firstName || !formData.lastName || !formData.phoneNumber) {
+      alert('Please fill in customer details');
+      return false;
+    }
 
-        const subtotal = serviceSubtotal + productSubtotal;
+    if (selectedServices.length === 0) {
+      alert('Please add at least one service');
+      return false;
+    }
 
-        // Calculate tip
-        const tipAmount = parseFloat(formData.tip) || 0;
+    if (!formData.paymentMethod || !formData.amountPaid) {
+      alert('Please complete payment details');
+      return false;
+    }
 
-        // Calculate GST
-        const gstPercentage = parseFloat(formData.gstPercentage) || 0;
-        const gst = (subtotal * gstPercentage) / 100;
+    if (parseFloat(formData.amountPaid) < billing.finalTotal) {
+      alert('Amount paid cannot be less than final total');
+      return false;
+    }
 
-        // Calculate totals
-        const grandTotal = subtotal + gst + tipAmount;
-        const cashback = parseFloat(formData.cashback) || 0;
-        const finalTotal = Math.max(grandTotal - cashback, 0);
+    return true;
+  };
 
-        // Update billing state
-        setBilling({
-            subtotal: Number(subtotal.toFixed(2)),
-            gst: Number(gst.toFixed(2)),
-            tip: Number(tipAmount.toFixed(2)),
-            grandTotal: Number(grandTotal.toFixed(2)),
-            finalTotal: Number(finalTotal.toFixed(2))
-        });
-    };
+  const generateBill = async () => {
+    if (!validateForm()) return;
 
-    const generateBill = async () => {
-        if (!formData.email || !formData.phoneNumber ||
-            (selectedServices.length === 0 && selectedProducts.length === 0) ||
-            !formData.paymentMethod || !formData.amountPaid) {
-            alert('Please fill in all required details and add at least one service or product.');
-            return;
-        }
+    setLoading(true);
+    try {
+      const billData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phoneNumber: formData.phoneNumber,
+        services: selectedServices,
+        products: selectedProducts,
+        subtotal: billing.subtotal,
+        gst: billing.gst,
+        grandTotal: billing.grandTotal,
+        cashback: parseFloat(formData.cashback) || 0,
+        finalTotal: billing.finalTotal,
+        paymentMethod: formData.paymentMethod,
+        amountPaid: parseFloat(formData.amountPaid)
+      };
 
-        if (parseFloat(formData.amountPaid) < billing.finalTotal) {
-            alert('The amount paid is less than the final total amount.');
-            return;
-        }
+      const response = await fetch('http://localhost:5001/api/billing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(billData)
+      });
 
-        setLoading(true);
-        try {
-            const billData = {
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                email: formData.email,
-                phoneNumber: formData.phoneNumber,
-                services: selectedServices,
-                products: selectedProducts,
-                subtotal: billing.subtotal,
-                gst: billing.gst,
-                gstPercentage: parseFloat(formData.gstPercentage),
-                tip: billing.tip,
-                grandTotal: billing.grandTotal,
-                cashback: parseFloat(formData.cashback) || 0,
-                finalTotal: billing.finalTotal,
-                paymentMethod: formData.paymentMethod,
-                amountPaid: parseFloat(formData.amountPaid)
-            };
+      if (!response.ok) throw new Error('Failed to generate bill');
 
-            const response = await fetch('http://localhost:5001/api/billing', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(billData),
-            });
+      alert('Bill generated successfully!');
+      clearForm();
+      window.location.href = '/reports';
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to generate bill');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            if (!response.ok) throw new Error('Failed to save bill');
-
-            alert('Bill generated and saved successfully!');
-            clearForm();
-            window.location.href = 'reports';
-        } catch (error) {
-            console.error('Error saving bill:', error);
-            alert('Failed to save the bill. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const clearForm = () => {
-        setFormData({
-            firstName: '',
-            lastName: '',
-            email: '',
-            phoneNumber: '',
-            serviceId: '',
-            serviceStaffId: '',
-            serviceDiscount: '',
-            productId: '',
-            productQuantity: 1,
-            productDiscount: '',
-            tip: '',
-            gstPercentage: '18',
-            cashback: '',
-            paymentMethod: '',
-            amountPaid: ''
-        });
-        setSelectedServices([]);
-        setSelectedProducts([]);
-        setBilling({
-            subtotal: 0,
-            gst: 0,
-            tip: 0,
-            grandTotal: 0,
-            finalTotal: 0
-        });
-    };
-
-    const toggleSidebar = () => {
-        setIsSidebarOpen(!isSidebarOpen);
-    };
+  const clearForm = () => {
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phoneNumber: '',
+      serviceId: '',
+      serviceStaffId: '',
+      serviceDiscount: '',
+      productId: '',
+      productQuantity: 1,
+      productDiscount: '',
+      tip: '',
+      gstPercentage: '18',
+      cashback: '',
+      paymentMethod: '',
+      amountPaid: ''
+    });
+    setSelectedServices([]);
+    setSelectedProducts([]);
+    setBilling({
+      subtotal: 0,
+      gst: 0,
+      grandTotal: 0,
+      cashback: 0,
+      finalTotal: 0
+    });
+  };
 
   return (
     <div className="d-flex" id="wrapper">
-      <Sidebar isOpen={isSidebarOpen} isSidebar={"Billing"} />
+      <Sidebar isOpen={isSidebarOpen} isSidebar="Billing" />
       <div id="page-content-wrapper">
-        <Header toggleSidebar={toggleSidebar} />
+        <Header toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
         <div className="container-fluid">
           <h1 className="mt-4">Billing</h1>
 
           <div className="bg-secondary p-4">
             <div className="row g-4">
-              {/* Customer Details Card */}
+              {/* Customer Details */}
               <div className="col-12">
                 <div className="card bg-transparent border">
                   <div className="card-header">
@@ -334,7 +344,7 @@ const BillingManagement = () => {
                             onChange={handleInputChange}
                             placeholder="Phone Number"
                           />
-                          <label htmlFor="phoneNumber">Phone Number</label>
+                          <label>Phone Number</label>
                         </div>
                       </div>
                       <div className="col-md-6">
@@ -347,7 +357,7 @@ const BillingManagement = () => {
                             onChange={handleInputChange}
                             placeholder="First Name"
                           />
-                          <label htmlFor="firstName">First Name</label>
+                          <label>First Name</label>
                         </div>
                       </div>
                       <div className="col-md-6">
@@ -360,7 +370,7 @@ const BillingManagement = () => {
                             onChange={handleInputChange}
                             placeholder="Last Name"
                           />
-                          <label htmlFor="lastName">Last Name</label>
+                          <label>Last Name</label>
                         </div>
                       </div>
                       <div className="col-md-6">
@@ -373,7 +383,7 @@ const BillingManagement = () => {
                             onChange={handleInputChange}
                             placeholder="Email"
                           />
-                          <label htmlFor="email">Email</label>
+                          <label>Email</label>
                         </div>
                       </div>
                     </div>
@@ -381,7 +391,7 @@ const BillingManagement = () => {
                 </div>
               </div>
 
-              {/* Services Card */}
+              {/* Services */}
               <div className="col-md-6">
                 <div className="card bg-transparent border h-100">
                   <div className="card-header">
@@ -404,7 +414,7 @@ const BillingManagement = () => {
                               </option>
                             ))}
                           </select>
-                          <label htmlFor="serviceId">Service</label>
+                          <label>Service</label>
                         </div>
                       </div>
                       <div className="col-md-6">
@@ -415,14 +425,14 @@ const BillingManagement = () => {
                             value={formData.serviceStaffId}
                             onChange={handleInputChange}
                           >
-                            <option value="">Select staff member</option>
+                            <option value="">Select staff</option>
                             {staffMembers.map(staff => (
                               <option key={staff._id} value={staff._id}>
                                 {staff.firstName} {staff.lastName}
                               </option>
                             ))}
                           </select>
-                          <label htmlFor="serviceStaffId">Staff Member</label>
+                          <label>Staff Member</label>
                         </div>
                       </div>
                       <div className="col-md-6">
@@ -433,16 +443,14 @@ const BillingManagement = () => {
                             id="serviceDiscount"
                             value={formData.serviceDiscount}
                             onChange={handleInputChange}
-                            placeholder="Discount (₹)"
+                            placeholder="Discount"
                           />
-                          <label htmlFor="serviceDiscount">Discount (₹)</label>
+                          <label>Discount (₹)</label>
                         </div>
-
                       </div>
                       <div className="col-12">
                         <button
                           className="btn btn-primary w-100 py-3"
-                          type="button"
                           onClick={addService}
                         >
                           Add Service
@@ -453,7 +461,7 @@ const BillingManagement = () => {
                 </div>
               </div>
 
-              {/* Products Card */}
+              {/* Products */}
               <div className="col-md-6">
                 <div className="card bg-transparent border h-100">
                   <div className="card-header">
@@ -476,7 +484,7 @@ const BillingManagement = () => {
                               </option>
                             ))}
                           </select>
-                          <label htmlFor="productId">Product</label>
+                          <label>Product</label>
                         </div>
                       </div>
                       <div className="col-md-6">
@@ -488,8 +496,9 @@ const BillingManagement = () => {
                             value={formData.productQuantity}
                             onChange={handleInputChange}
                             min="1"
+                            placeholder="Quantity"
                           />
-                          <label htmlFor="productQuantity">Quantity</label>
+                          <label>Quantity</label>
                         </div>
                       </div>
                       <div className="col-md-6">
@@ -500,15 +509,14 @@ const BillingManagement = () => {
                             id="productDiscount"
                             value={formData.productDiscount}
                             onChange={handleInputChange}
-                            placeholder="Discount (%)"
+                            placeholder="Discount %"
                           />
-                          <label htmlFor="productDiscount">Discount (%)</label>
+                          <label>Discount (%)</label>
                         </div>
                       </div>
                       <div className="col-12">
                         <button
                           className="btn btn-primary w-100 py-3"
-                          type="button"
                           onClick={addProduct}
                         >
                           Add Product
@@ -519,7 +527,7 @@ const BillingManagement = () => {
                 </div>
               </div>
 
-              {/* Selected Items Lists */}
+              {/* Selected Items */}
               <div className="col-12">
                 <div className="card bg-transparent border">
                   <div className="card-header">
@@ -530,10 +538,18 @@ const BillingManagement = () => {
                     <div className="list-group mb-4">
                       {selectedServices.map((service, index) => (
                         <div key={index} className="list-group-item d-flex justify-content-between align-items-center bg-transparent text-white border-light">
-                          <div>{service.name} (Staff: {service.staffName})</div>
                           <div>
-                            ₹{service.finalPrice.toFixed(2)}
-                            {service.discount > 0 && ` (Discount: ₹${service.discount.toFixed(2)})`}
+                            {service.name} (Staff: {service.staffName})
+                            <br />
+                            <small>Original Price: ₹{service.price}</small>
+                          </div>
+                          <div>
+                            ₹{service.finalPrice}
+                            {service.discount > 0 &&
+                              <span className="ms-2 text-warning">
+                                (-₹{service.discount})
+                              </span>
+                            }
                             <button
                               className="btn btn-danger btn-sm ms-3"
                               onClick={() => removeService(index)}
@@ -549,10 +565,18 @@ const BillingManagement = () => {
                     <div className="list-group">
                       {selectedProducts.map((product, index) => (
                         <div key={index} className="list-group-item d-flex justify-content-between align-items-center bg-transparent text-white border-light">
-                          <div>{product.name} (x{product.quantity})</div>
                           <div>
-                            ₹{product.finalPrice.toFixed(2)}
-                            {product.discountPercentage > 0 && ` (Discount: ${product.discountPercentage}%)`}
+                            {product.name} (x{product.quantity})
+                            <br />
+                            <small>
+                              Price: ₹{product.price} each
+                              {product.discountPercentage > 0 &&
+                                ` (-${product.discountPercentage}%)`
+                              }
+                            </small>
+                          </div>
+                          <div>
+                            ₹{(product.price * product.quantity) - (product.discount * product.quantity)}
                             <button
                               className="btn btn-danger btn-sm ms-3"
                               onClick={() => removeProduct(index)}
@@ -567,9 +591,9 @@ const BillingManagement = () => {
                 </div>
               </div>
 
-              {/* GST and Tip Inputs */}
+              {/* GST and Bill Details */}
               <div className="col-md-6">
-                <div className="form-floating">
+                <div className="form-floating mb-3">
                   <input
                     type="number"
                     className="form-control bg-transparent"
@@ -578,148 +602,118 @@ const BillingManagement = () => {
                     onChange={handleInputChange}
                     min="0"
                     max="100"
-                    placeholder="GST Percentage"
+                    placeholder="GST %"
                   />
-                  <label htmlFor="gstPercentage">GST Percentage (%)</label>
+                  <label>GST Percentage (%)</label>
                 </div>
               </div>
 
               <div className="col-md-6">
-                <div className="form-floating">
+                <div className="form-floating mb-3">
                   <input
                     type="number"
                     className="form-control bg-transparent"
-                    id="tip"
-                    value={formData.tip}
+                    id="cashback"
+                    value={formData.cashback}
                     onChange={handleInputChange}
                     min="0"
-                    placeholder="Tip Amount"
+                    placeholder="Cashback"
                   />
-                  <label htmlFor="tip">Tip Amount (₹)</label>
+                  <label>Cashback (₹)</label>
                 </div>
               </div>
 
-              {/* Bill Details */}
+              {/* Bill Summary */}
               <div className="col-md-12">
-                <div className="card bg-transparent border h-100">
+                <div className="card bg-transparent border">
                   <div className="card-header">
-                    <h5 className="card-title text-white mb-0">Bill Details</h5>
+                    <h5 className="card-title text-white mb-0">Bill Summary</h5>
                   </div>
                   <div className="card-body">
-                    <div className="d-flex justify-content-between mb-3">
+                    <div className="d-flex justify-content-between mb-2">
                       <span className="text-white">Subtotal:</span>
-                      <span className="text-white">₹{billing.subtotal.toFixed(2)}</span>
+                      <span className="text-white">₹{billing.subtotal}</span>
                     </div>
-                    <div className="d-flex justify-content-between mb-3">
+                    <div className="d-flex justify-content-between mb-2">
                       <span className="text-white">GST ({formData.gstPercentage}%):</span>
-                      <span className="text-white">₹{billing.gst.toFixed(2)}</span>
+                      <span className="text-white">₹{billing.gst}</span>
                     </div>
-                    <div className="d-flex justify-content-between mb-3">
-                      <span className="text-white">Tip:</span>
-                      <span className="text-white">₹{billing.tip.toFixed(2)}</span>
-                    </div>
-                    <div className="d-flex justify-content-between mb-3">
+                    <div className="d-flex justify-content-between mb-2">
                       <span className="text-white">Grand Total:</span>
-                      <span className="text-white">₹{billing.grandTotal.toFixed(2)}</span>
+                      <span className="text-white">₹{billing.grandTotal}</span>
                     </div>
-                    <div className="d-flex justify-content-between mb-3">
-                      <span className="text-white">Final Total:</span>
-                      <span className="text-white">₹{billing.finalTotal.toFixed(2)}</span>
+                    <div className="d-flex justify-content-between mb-2">
+                      <span className="text-white">Cashback:</span>
+                      <span className="text-white">₹{billing.cashback}</span>
+                    </div>
+                    <div className="d-flex justify-content-between mb-2">
+                      <span className="text-white fw-bold">Final Total:</span>
+                      <span className="text-white fw-bold">₹{billing.finalTotal}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Payment Section */}
+              {/* Payment Details */}
               <div className="col-md-12">
-                <div className="card bg-transparent border h-100">
+                <div className="card bg-transparent border">
                   <div className="card-header">
                     <h5 className="card-title text-white mb-0">Payment Details</h5>
                   </div>
                   <div className="card-body">
-                    <div className="row g-3">
-                      <div className="col-12">
-                        <div className="form-floating">
-                          <input
-                            type="number"
-                            className="form-control bg-transparent"
-                            id="cashback"
-                            value={formData.cashback}
-                            onChange={handleInputChange}
-                            placeholder="Cashback"
-                          />
-                          <label htmlFor="cashback">Cashback (₹)</label>
-                        </div>
-                      </div>
-                      <div className="col-md-6">
-                        <div className="form-floating">
-                          <select
-                            className="form-select bg-transparent"
-                            id="paymentMethod"
-                            value={formData.paymentMethod}
-                            onChange={handleInputChange}
-                          >
-                            <option value="">Select payment method</option>
-                            <option value="cash">Cash</option>
-                            <option value="upi">UPI</option>
-                            <option value="wallet">Wallet</option>
-                            <option value="card">Card</option>
-                          </select>
-                          <label htmlFor="paymentMethod">Payment Method</label>
-                        </div>
-                      </div>
-                      <div className="col-md-6">
-                        <div className="form-floating">
-                          <input
-                            type="number"
-                            className="form-control bg-transparent"
-                            id="amountPaid"
-                            value={formData.amountPaid}
-                            onChange={handleInputChange}
-                            placeholder="Amount Paid"
-                          />
-                          <label htmlFor="amountPaid">Amount Paid (₹)</label>
-                        </div>
-                      </div>
-                      <div className="col-12">
-                        <button
-                          className="btn btn-primary w-100 py-3"
-                          type="button"
-                          onClick={generateBill}
-                          disabled={loading}
-                        >
-                          {loading ? 'Generating Bill...' : 'Generate Bill'}
-                        </button>
-                      </div>
+                    <div className="form-floating mb-3">
+                      <select
+                        className="form-select bg-transparent"
+                        id="paymentMethod"
+                        value={formData.paymentMethod}
+                        onChange={handleInputChange}
+                      >
+                        <option value="">Select payment method</option>
+                        <option value="cash">Cash</option>
+                        <option value="card">Card</option>
+                        <option value="upi">UPI</option>
+                      </select>
+                      <label>Payment Method</label>
                     </div>
+                    <div className="form-floating mb-3">
+                      <input
+                        type="number"
+                        className="form-control bg-transparent"
+                        id="amountPaid"
+                        value={formData.amountPaid}
+                        onChange={handleInputChange}
+                        placeholder="Amount Paid"
+                      />
+                      <label>Amount Paid (₹)</label>
+                    </div>
+                    <button
+                      className="btn btn-primary w-100 py-3"
+                      onClick={generateBill}
+                      disabled={loading}
+                    >
+                      {loading ? 'Generating Bill...' : 'Generate Bill'}
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Loading Overlay */}
-          {loading && (
-            <div
-              style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(0,0,0,0.5)',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                zIndex: 1000
-              }}
-            >
-              <div className="spinner-border text-light" role="status">
-                <span className="visually-hidden">Loading...</span>
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* Loading Overlay */}
+        {loading && (
+          <div
+            className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+            style={{
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              zIndex: 1050
+            }}
+          >
+            <div className="spinner-border text-light" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
