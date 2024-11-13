@@ -104,26 +104,28 @@ const OutlookCalendar = () => {
 
     const handleAppointmentSubmit = async () => {
         if (!validateForm()) return;
-
+    
         setLoading(true);
         setError(null);
-
+    
         try {
             const [firstName, ...lastNameParts] = customerName.trim().split(' ');
             const lastName = lastNameParts.join(' ');
-
+    
             const appointmentData = {
-                firstName,
-                lastName,
-                phoneNumber: customerPhone,
-                email: customerEmail,
+                customer: {
+                    firstName,
+                    lastName,
+                    phoneNumber: customerPhone,
+                    email: customerEmail
+                },
                 service: selectedService._id,
                 staff: selectedStaff._id,
                 dateTime: selectedTime,
                 notes: notes,
                 status: 'confirmed'
             };
-
+    
             const response = await fetch('http://localhost:5001/api/appointments', {
                 method: 'POST',
                 headers: {
@@ -131,12 +133,12 @@ const OutlookCalendar = () => {
                 },
                 body: JSON.stringify(appointmentData),
             });
-
+    
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Failed to create appointment');
             }
-
+    
             await fetchAppointments();
             setShowBookingModal(false);
             resetBookingForm();
@@ -210,196 +212,206 @@ const OutlookCalendar = () => {
     );
 
     const BookingModal = () => (
-      <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-lg">
-              <div className="modal-content">
-                  <div className="modal-header">
-                      <h5 className="modal-title">Book Appointment</h5>
-                      <button
-                          type="button"
-                          className="btn-close"
-                          onClick={() => {
-                              setShowBookingModal(false);
-                              resetBookingForm();
-                          }}
-                      ></button>
-                  </div>
-                  <div className="modal-body bg-secondary">
-                      {error && (
-                          <div className="alert alert-danger mb-4" role="alert">
-                              {error}
-                          </div>
-                      )}
-  
-                      <form onSubmit={(e) => {
-                          e.preventDefault();
-                          handleAppointmentSubmit();
-                      }}>
-                          <div className="row g-3">
-                              {/* Date and Time Section */}
-                              <div className="col-12">
-                                  <div className="form-floating">
-                                      <input
-                                          type="text"
-                                          className="form-control bg-transparent"
-                                          id="appointmentDateTime"
-                                          value={format(selectedTime || selectedDate, 'PPpp')}
-                                          disabled
-                                      />
-                                      <label htmlFor="appointmentDateTime">Appointment Date & Time</label>
-                                  </div>
-                              </div>
-  
-                              {/* Service Selection */}
-                              <div className="col-md-6">
-                                  <div className="form-floating">
-                                      <select
-                                          className="form-select bg-transparent"
-                                          id="service"
-                                          value={selectedService?._id || ''}
-                                          onChange={(e) => {
-                                              const service = services.find(s => s._id === e.target.value);
-                                              setSelectedService(service);
-                                          }}
-                                      >
-                                          <option value="">Select a service</option>
-                                          {services.map(service => (
-                                              <option key={service._id} value={service._id}>
-                                                  {service.serviceName} - {service.duration}min - ₹{service.price}
-                                              </option>
-                                          ))}
-                                      </select>
-                                      <label htmlFor="service">Service *</label>
-                                  </div>
-                              </div>
-  
-                              {/* Staff Selection */}
-                              <div className="col-md-6">
-                                  <div className="form-floating">
-                                      <select
-                                          className="form-select bg-transparent"
-                                          id="staff"
-                                          value={selectedStaff?._id || ''}
-                                          onChange={(e) => {
-                                              const staffMember = staff.find(s => s._id === e.target.value);
-                                              setSelectedStaff(staffMember);
-                                          }}
-                                      >
-                                          <option value="">Select a staff member</option>
-                                          {staff.map(staffMember => (
-                                              <option key={staffMember._id} value={staffMember._id}>
-                                                  {staffMember.firstName} {staffMember.lastName}
-                                                  {staffMember.specialization ? ` - ${staffMember.specialization}` : ''}
-                                              </option>
-                                          ))}
-                                      </select>
-                                      <label htmlFor="staff">Staff Member *</label>
-                                  </div>
-                              </div>
-  
-                              {/* Customer First Name */}
-                              <div className="col-md-6">
-                                  <div className="form-floating">
-                                      <input
-                                          type="text"
-                                          className="form-control bg-transparent"
-                                          id="firstName"
-                                          value={customerName.split(' ')[0] || ''}
-                                          onChange={(e) => {
-                                              const lastName = customerName.split(' ').slice(1).join(' ');
-                                              setCustomerName(`${e.target.value} ${lastName}`);
-                                          }}
-                                          placeholder="Enter first name"
-                                      />
-                                      <label htmlFor="firstName">First Name *</label>
-                                  </div>
-                              </div>
-  
-                              {/* Customer Last Name */}
-                              <div className="col-md-6">
-                                  <div className="form-floating">
-                                      <input
-                                          type="text"
-                                          className="form-control bg-transparent"
-                                          id="lastName"
-                                          value={customerName.split(' ').slice(1).join(' ')}
-                                          onChange={(e) => {
-                                              const firstName = customerName.split(' ')[0] || '';
-                                              setCustomerName(`${firstName} ${e.target.value}`);
-                                          }}
-                                          placeholder="Enter last name"
-                                      />
-                                      <label htmlFor="lastName">Last Name *</label>
-                                  </div>
-                              </div>
-  
-                              {/* Phone Number */}
-                              <div className="col-md-6">
-                                  <div className="form-floating">
-                                      <input
-                                          type="tel"
-                                          className="form-control bg-transparent"
-                                          id="phoneNumber"
-                                          value={customerPhone}
-                                          onChange={(e) => setCustomerPhone(e.target.value)}
-                                          placeholder="Enter phone number"
-                                      />
-                                      <label htmlFor="phoneNumber">Phone Number *</label>
-                                  </div>
-                              </div>
-  
-                              {/* Email */}
-                              <div className="col-md-6">
-                                  <div className="form-floating">
-                                      <input
-                                          type="email"
-                                          className="form-control bg-transparent"
-                                          id="email"
-                                          value={customerEmail}
-                                          onChange={(e) => setCustomerEmail(e.target.value)}
-                                          placeholder="Enter email"
-                                      />
-                                      <label htmlFor="email">Email (Optional)</label>
-                                  </div>
-                              </div>
-  
-                              {/* Notes */}
-                              <div className="col-12">
-                                  <div className="form-floating">
-                                      <textarea
-                                          className="form-control bg-transparent"
-                                          id="notes"
-                                          value={notes}
-                                          onChange={(e) => setNotes(e.target.value)}
-                                          placeholder="Add notes"
-                                          style={{ height: '100px' }}
-                                      ></textarea>
-                                      <label htmlFor="notes">Additional Notes (Optional)</label>
-                                  </div>
-                              </div>
-  
-                              {/* Submit Button */}
-                              <div className="col-12">
-                                  <button
-                                      type="submit"
-                                      className="btn btn-primary w-100 py-3"
-                                      disabled={loading}
-                                  >
-                                      {loading ? (
-                                          <>
-                                              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                              Booking...
-                                          </>
-                                      ) : 'Book Appointment'}
-                                  </button>
-                              </div>
-                          </div>
-                      </form>
-                  </div>
-              </div>
-          </div>
-      </div>
-  );
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <div className="modal-dialog modal-lg">
+                <div className="modal-content">
+                    <div className="modal-header">
+                        <h5 className="modal-title">Book Appointment</h5>
+                        <button
+                            type="button"
+                            className="btn-close"
+                            onClick={() => {
+                                setShowBookingModal(false);
+                                resetBookingForm();
+                            }}
+                        ></button>
+                    </div>
+                    <div className="modal-body bg-secondary">
+                        {error && (
+                            <div className="alert alert-danger mb-4" role="alert">
+                                {error}
+                            </div>
+                        )}
+    
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            handleAppointmentSubmit();
+                        }}>
+                            <div className="row g-3">
+                                {/* Date and Time Section */}
+                                <div className="col-12">
+                                    <div className="form-floating">
+                                        <input
+                                            type="text"
+                                            className="form-control bg-transparent"
+                                            id="appointmentDateTime"
+                                            value={format(selectedTime || selectedDate, 'PPpp')}
+                                            disabled
+                                        />
+                                        <label htmlFor="appointmentDateTime">Appointment Date & Time</label>
+                                    </div>
+                                </div>
+    
+                                {/* Service Selection */}
+                                <div className="col-md-6">
+                                    <div className="form-floating">
+                                        <select
+                                            className="form-select bg-transparent"
+                                            id="service"
+                                            value={selectedService?._id || ''}
+                                            onChange={(e) => {
+                                                const service = services.find(s => s._id === e.target.value);
+                                                setSelectedService(service);
+                                            }}
+                                        >
+                                            <option value="">Select a service</option>
+                                            {services.map(service => (
+                                                <option key={service._id} value={service._id}>
+                                                    {service.serviceName} - {service.duration}min - ₹{service.price}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <label htmlFor="service">Service *</label>
+                                    </div>
+                                </div>
+    
+                                {/* Staff Selection */}
+                                <div className="col-md-6">
+                                    <div className="form-floating">
+                                        <select
+                                            className="form-select bg-transparent"
+                                            id="staff"
+                                            value={selectedStaff?._id || ''}
+                                            onChange={(e) => {
+                                                const staffMember = staff.find(s => s._id === e.target.value);
+                                                setSelectedStaff(staffMember);
+                                            }}
+                                        >
+                                            <option value="">Select a staff member</option>
+                                            {staff.map(staffMember => (
+                                                <option key={staffMember._id} value={staffMember._id}>
+                                                    {staffMember.firstName} {staffMember.lastName}
+                                                    {staffMember.specialization ? ` - ${staffMember.specialization}` : ''}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <label htmlFor="staff">Staff Member *</label>
+                                    </div>
+                                </div>
+    
+                                {/* Customer First Name */}
+                                <div className="col-md-6">
+                                    <div className="form-floating">
+                                        <input
+                                            type="text"
+                                            className="form-control bg-transparent"
+                                            id="firstName"
+                                            value={customerName.split(' ')[0] || ''}
+                                            onChange={(e) => {
+                                                const lastName = customerName.split(' ').slice(1).join(' ');
+                                                setCustomerName(`${e.target.value} ${lastName}`);
+                                            }}
+                                            onBlur={(e) => {
+                                                if (!e.target.value) {
+                                                    e.target.focus();
+                                                }
+                                            }}
+                                            placeholder="Enter first name"
+                                        />
+                                        <label htmlFor="firstName">First Name *</label>
+                                    </div>
+                                </div>
+    
+                                {/* Customer Last Name */}
+                                <div className="col-md-6">
+                                    <div className="form-floating">
+                                        <input
+                                            type="text"
+                                            className="form-control bg-transparent"
+                                            id="lastName"
+                                            value={customerName.split(' ').slice(1).join(' ')}
+                                            onChange={(e) => {
+                                                const firstName = customerName.split(' ')[0] || '';
+                                                setCustomerName(`${firstName} ${e.target.value}`);
+                                            }}
+                                            onBlur={(e) => {
+                                                if (!e.target.value) {
+                                                    e.target.focus();
+                                                }
+                                            }}
+                                            placeholder="Enter last name"
+                                        />
+                                        <label htmlFor="lastName">Last Name *</label>
+                                    </div>
+                                </div>
+    
+                                {/* Phone Number */}
+                                <div className="col-md-6">
+                                    <div className="form-floating">
+                                        <input
+                                            type="tel"
+                                            className="form-control bg-transparent"
+                                            id="phoneNumber"
+                                            value={customerPhone}
+                                            onChange={(e) => setCustomerPhone(e.target.value)}
+                                            placeholder="Enter phone number"
+                                        />
+                                        <label htmlFor="phoneNumber">Phone Number *</label>
+                                    </div>
+                                </div>
+    
+                                {/* Email */}
+                                <div className="col-md-6">
+                                    <div className="form-floating">
+                                        <input
+                                            type="email"
+                                            className="form-control bg-transparent"
+                                            id="email"
+                                            value={customerEmail}
+                                            onChange={(e) => setCustomerEmail(e.target.value)}
+                                            placeholder="Enter email"
+                                        />
+                                        <label htmlFor="email">Email (Optional)</label>
+                                    </div>
+                                </div>
+    
+                                {/* Notes */}
+                                <div className="col-12">
+                                    <div className="form-floating">
+                                        <textarea
+                                            className="form-control bg-transparent"
+                                            id="notes"
+                                            value={notes}
+                                            onChange={(e) => setNotes(e.target.value)}
+                                            placeholder="Add notes"
+                                            style={{ height: '100px' }}
+                                        ></textarea>
+                                        <label htmlFor="notes">Additional Notes (Optional)</label>
+                                    </div>
+                                </div>
+    
+                                {/* Submit Button */}
+                                <div className="col-12">
+                                    <button
+                                        type="submit"
+                                        className="btn btn-primary w-100 py-3"
+                                        disabled={loading}
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                                Booking...
+                                            </>
+                                        ) : 'Book Appointment'}
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 
   const additionalStyles = `
   .form-floating > .form-control,

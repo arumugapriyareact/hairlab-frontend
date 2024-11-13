@@ -30,7 +30,9 @@ const Sidebar = ({ isOpen,isSidebar }) => {
         <a href="/staff" className={`list-group-item list-group-item-action bg-secondary text-light ${isSidebar=="Staff"?"active":''}`}>Staff</a>
         <a href="/reports"className={`list-group-item list-group-item-action bg-secondary text-light ${isSidebar=="Reports"?"active":''}`}>Reports</a>
         <a href="/customer" className={`list-group-item list-group-item-action bg-secondary text-light ${isSidebar=="Customer"?"active":''}`}>Customer</a>
-        <a href="/users"className={`list-group-item list-group-item-action bg-secondary text-light ${isSidebar=="Users"?"active":''}`}>Users</a></>
+        <a href="/users"className={`list-group-item list-group-item-action bg-secondary text-light ${isSidebar=="Users"?"active":''}`}>Users</a>
+        <a href="/imagemanagement"className={`list-group-item list-group-item-action bg-secondary text-light ${isSidebar=="Images"?"active":''}`}>ImageManagement</a>
+        </>
       }
     
     </div>

@@ -16,7 +16,7 @@ const ProductManagement = () => {
 
   // States for pagination, search, and filtering
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [errors, setErrors] = useState({});
@@ -84,6 +84,11 @@ const ProductManagement = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = sortedProducts.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
+
+  const handleRowsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
 
   const validateForm = () => {
     let newErrors = {};
@@ -381,11 +386,27 @@ const ProductManagement = () => {
                 {/* Pagination Section */}
                 {currentItems.length > 0 && (
                   <div className="d-flex justify-content-between align-items-center mt-4">
+                    <div className="d-flex align-items-center">
+                      <span className="me-2">Show</span>
+                      <select
+                        className="form-select form-select-sm"
+                        value={itemsPerPage}
+                        onChange={handleRowsPerPageChange}
+                        style={{ width: 'auto' }}
+                      >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                      <span className="ms-2">entries</span>
+                    </div>
                     <div>
                       Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, sortedProducts.length)} of {sortedProducts.length} entries
                     </div>
                     <nav>
-                      <ul className="pagination mb-0">
+                    <ul className="pagination mb-0">
                         <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
                           <button
                             className="page-link"
@@ -401,38 +422,38 @@ const ProductManagement = () => {
                             pageNumber === totalPages ||
                             (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1);
 
-                            if (!showPage && pageNumber === currentPage - 2) {
-                              return <li key={pageNumber} className="page-item disabled"><span className="page-link">...</span></li>;
-                            }
-  
-                            if (!showPage && pageNumber === currentPage + 2) {
-                              return <li key={pageNumber} className="page-item disabled"><span className="page-link">...</span></li>;
-                            }
-  
-                            if (!showPage) return null;
-  
-                            return (
-                              <li
-                                key={pageNumber}
-                                className={`page-item ${currentPage === pageNumber ? 'active' : ''}`}
-                              >
-                                <button
-                                  className="page-link"
-                                  onClick={() => setCurrentPage(pageNumber)}
-                                >
-                                  {pageNumber}
-                                </button>
-                              </li>
-                            );
-                          })}
-                          <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                            <button
-                              className="page-link"
-                              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                              disabled={currentPage === totalPages}
+                          if (!showPage && pageNumber === currentPage - 2) {
+                            return <li key={pageNumber} className="page-item disabled"><span className="page-link">...</span></li>;
+                          }
+
+                          if (!showPage && pageNumber === currentPage + 2) {
+                            return <li key={pageNumber} className="page-item disabled"><span className="page-link">...</span></li>;
+                          }
+
+                          if (!showPage) return null;
+
+                          return (
+                            <li
+                              key={pageNumber}
+                              className={`page-item ${currentPage === pageNumber ? 'active' : ''}`}
                             >
-                              Next
-                            </button>
+                              <button
+                                className="page-link"
+                                onClick={() => setCurrentPage(pageNumber)}
+                              >
+                                {pageNumber}
+                              </button>
+                            </li>
+                          );
+                        })}
+                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                          <button
+                            className="page-link"
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                          >
+                            Next
+                          </button>
                           </li>
                         </ul>
                       </nav>
@@ -441,7 +462,7 @@ const ProductManagement = () => {
                 </div>
               </div>
             </div>
-  
+
             {/* Loading Overlay */}
             {loading && (
               <div
@@ -466,7 +487,7 @@ const ProductManagement = () => {
           </div>
         </div>
       </div>
-    );
-  };
-  
-  export default ProductManagement;
+  );
+};
+
+export default ProductManagement;

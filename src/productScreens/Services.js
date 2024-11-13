@@ -14,9 +14,9 @@ const ServiceManagement = () => {
     description: ''
   });
 
-  // New states for pagination, search, and sorting
+  // States for pagination, search, and sorting
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [errors, setErrors] = useState({});
@@ -82,6 +82,11 @@ const ServiceManagement = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = sortedServices.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(sortedServices.length / itemsPerPage);
+
+  const handleRowsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
 
   const validateForm = () => {
     let newErrors = {};
@@ -370,11 +375,28 @@ const ServiceManagement = () => {
                   </table>
                 </div>
 
-                {/* Pagination Section */}
+                {/* Updated Pagination Section with Show Entries */}
                 {currentItems.length > 0 && (
                   <div className="d-flex justify-content-between align-items-center mt-4">
+                    <div className="d-flex align-items-center">
+                      <span className="me-2">Show</span>
+                      <select
+                        className="form-select form-select-sm"
+                        value={itemsPerPage}
+                        onChange={handleRowsPerPageChange}
+                        style={{ width: 'auto' }}
+                      >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                      <span className="ms-2">entries</span>
+                    </div>
                     <div>
-                      Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, sortedServices.length)} of {sortedServices.length} entries
+                      Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, sortedServices.length)} of
+                      {sortedServices.length} entries
                     </div>
                     <nav>
                       <ul className="pagination mb-0">
@@ -393,72 +415,72 @@ const ServiceManagement = () => {
                             pageNumber === totalPages ||
                             (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1);
 
-                            if (!showPage && pageNumber === currentPage - 2) {
-                              return <li key={pageNumber} className="page-item disabled"><span className="page-link">...</span></li>;
-                            }
-  
-                            if (!showPage && pageNumber === currentPage + 2) {
-                              return <li key={pageNumber} className="page-item disabled"><span className="page-link">...</span></li>;
-                            }
-  
-                            if (!showPage) return null;
-  
-                            return (
-                              <li
-                                key={pageNumber}
-                                className={`page-item ${currentPage === pageNumber ? 'active' : ''}`}
-                              >
-                                <button
-                                  className="page-link"
-                                  onClick={() => setCurrentPage(pageNumber)}
-                                >
-                                  {pageNumber}
-                                </button>
-                              </li>
-                            );
-                          })}
-                          <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                            <button
-                              className="page-link"
-                              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                              disabled={currentPage === totalPages}
+                          if (!showPage && pageNumber === currentPage - 2) {
+                            return <li key={pageNumber} className="page-item disabled"><span className="page-link">...</span></li>;
+                          }
+
+                          if (!showPage && pageNumber === currentPage + 2) {
+                            return <li key={pageNumber} className="page-item disabled"><span className="page-link">...</span></li>;
+                          }
+
+                          if (!showPage) return null;
+
+                          return (
+                            <li
+                              key={pageNumber}
+                              className={`page-item ${currentPage === pageNumber ? 'active' : ''}`}
                             >
-                              Next
-                            </button>
-                          </li>
-                        </ul>
-                      </nav>
-                    </div>
-                  )}
-                </div>
+                              <button
+                                className="page-link"
+                                onClick={() => setCurrentPage(pageNumber)}
+                              >
+                                {pageNumber}
+                              </button>
+                            </li>
+                          );
+                        })}
+                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                          <button
+                            className="page-link"
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                          >
+                            Next
+                          </button>
+                        </li>
+                      </ul>
+                    </nav>
+                  </div>
+                )}
               </div>
             </div>
-  
-            {/* Loading Overlay */}
-            {loading && (
-              <div
-                style={{
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: 'rgba(0,0,0,0.5)',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  zIndex: 1000
-                }}
-              >
-                <div className="spinner-border text-light" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-              </div>
-            )}
           </div>
+
+          {/* Loading Overlay */}
+          {loading && (
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 1000
+              }}
+            >
+              <div className="spinner-border text-light" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    );
-  };
-  
-  export default ServiceManagement;
+    </div>
+  );
+};
+
+export default ServiceManagement;

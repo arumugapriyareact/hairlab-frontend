@@ -18,9 +18,9 @@ const CustomerManagement = () => {
     notes: ''
   });
 
-  // States for pagination, search, and filtering
+  // Updated States for pagination, search, and filtering
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(5); // Changed to state
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     firstName: '',
@@ -92,6 +92,12 @@ const CustomerManagement = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = sortedCustomers.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(sortedCustomers.length / itemsPerPage);
+
+  // Add handleRowsPerPageChange function
+  const handleRowsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
 
   const validateForm = () => {
     let newErrors = {};
@@ -370,10 +376,9 @@ const CustomerManagement = () => {
             {/* Customer List */}
             <div className={`tab-pane fade ${activeTab === 'list-customers' ? 'show active' : ''}`}>
               <div className="bg-secondary p-4">
-                {/* Search and Filter Section */}
+                {/* Search Section */}
                 <div className="row mb-4">
-                  {/* Global Search */}
-                  <div className="col-3 mb-3">
+                  <div className="col-3">
                     <input
                       type="text"
                       className="form-control"
@@ -385,56 +390,6 @@ const CustomerManagement = () => {
                       }}
                     />
                   </div>
-
-                  {/* Column Filters */}
-                  {/* <div className="col-md-3">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Filter First Name"
-                      value={filters.firstName}
-                      onChange={(e) => {
-                        setFilters(prev => ({ ...prev, firstName: e.target.value }));
-                        setCurrentPage(1);
-                      }}
-                    />
-                  </div>
-                  <div className="col-md-3">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Filter Last Name"
-                      value={filters.lastName}
-                      onChange={(e) => {
-                        setFilters(prev => ({ ...prev, lastName: e.target.value }));
-                        setCurrentPage(1);
-                      }}
-                    />
-                  </div>
-                  <div className="col-md-3">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Filter Phone"
-                      value={filters.phoneNumber}
-                      onChange={(e) => {
-                        setFilters(prev => ({ ...prev, phoneNumber: e.target.value }));
-                        setCurrentPage(1);
-                      }}
-                    />
-                  </div>
-                  <div className="col-md-3">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Filter Email"
-                      value={filters.email}
-                      onChange={(e) => {
-                        setFilters(prev => ({ ...prev, email: e.target.value }));
-                        setCurrentPage(1);
-                      }}
-                    />
-                  </div> */}
                 </div>
 
                 {/* Table Section */}
@@ -455,7 +410,7 @@ const CustomerManagement = () => {
                           Email {sortConfig.key === 'email' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                         </th>
                         <th onClick={() => handleSort('gender')} style={{ cursor: 'pointer' }}>
-                          Gender {sortConfig.key === 'gender' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                        Gender {sortConfig.key === 'gender' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                         </th>
                         <th>Actions</th>
                       </tr>
@@ -494,9 +449,25 @@ const CustomerManagement = () => {
                   </table>
                 </div>
 
-                {/* Pagination Section */}
+                {/* Updated Pagination Section with Show Entries */}
                 {currentItems.length > 0 && (
                   <div className="d-flex justify-content-between align-items-center mt-4">
+                    <div className="d-flex align-items-center">
+                      <span className="me-2">Show</span>
+                      <select
+                        className="form-select form-select-sm"
+                        value={itemsPerPage}
+                        onChange={handleRowsPerPageChange}
+                        style={{ width: 'auto' }}
+                      >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                      <span className="ms-2">entries</span>
+                    </div>
                     <div>
                       Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, sortedCustomers.length)} of {sortedCustomers.length} entries
                     </div>
@@ -511,9 +482,7 @@ const CustomerManagement = () => {
                             Previous
                           </button>
                         </li>
-                        {/* Page Numbers */}
                         {[...Array(totalPages)].map((_, index) => {
-                          // Show first page, last page, and pages around current page
                           const pageNumber = index + 1;
                           const showPage = pageNumber === 1 ||
                             pageNumber === totalPages ||

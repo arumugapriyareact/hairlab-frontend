@@ -8,7 +8,7 @@ const StaffManagement = () => {
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [formData, setFormData] = useState({
@@ -136,6 +136,11 @@ const StaffManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRowsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1);
   };
 
   const filteredStaff = staff.filter(member => {
@@ -407,7 +412,8 @@ const StaffManagement = () => {
                             ></textarea>
                             <label htmlFor="notes">Additional Notes (Optional)</label>
                           </div>
-                        </div>
+
+                          </div>
 
                         <div className="col-12">
                           <button
@@ -519,9 +525,25 @@ const StaffManagement = () => {
                   </table>
                 </div>
 
-                {/* Pagination Section */}
+                {/* Updated Pagination Section */}
                 {currentItems.length > 0 && (
                   <div className="d-flex justify-content-between align-items-center mt-4">
+                    <div className="d-flex align-items-center">
+                      <span className="me-2">Show</span>
+                      <select
+                        className="form-select form-select-sm"
+                        value={itemsPerPage}
+                        onChange={handleRowsPerPageChange}
+                        style={{ width: 'auto' }}
+                      >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                      <span className="ms-2">entries</span>
+                    </div>
                     <div>
                       Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, sortedStaff.length)} of {sortedStaff.length} entries
                     </div>

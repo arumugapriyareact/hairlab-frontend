@@ -8,7 +8,7 @@ const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [formData, setFormData] = useState({
@@ -156,6 +156,11 @@ const UserManagement = () => {
   const currentItems = sortedUsers.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
 
+  const handleRowsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
   const handleSort = (key) => {
     setSortConfig(prevConfig => ({
       key,
@@ -199,7 +204,7 @@ const UserManagement = () => {
 
   return (
     <div className="d-flex" id="wrapper">
-      <Sidebar isOpen={isSidebarOpen} isSidebar={"User"} />
+      <Sidebar isOpen={isSidebarOpen} isSidebar={"Users"} />
       <div id="page-content-wrapper">
         <Header toggleSidebar={toggleSidebar} />
         <div className="container-fluid">
@@ -395,13 +400,14 @@ const UserManagement = () => {
                               <button 
                                 className="btn btn-sm btn-primary me-2"
                                 onClick={() => handleEdit(user)}
-                              >
+                                >
                                 <i className="fas fa-edit"></i> Edit
                               </button>
                               <button 
                                 className="btn btn-sm btn-danger"
                                 onClick={() => handleDelete(user._id)}
-                              ><i className="fas fa-trash"></i> Delete
+                              >
+                                <i className="fas fa-trash"></i> Delete
                               </button>
                             </td>
                           </tr>
@@ -411,9 +417,25 @@ const UserManagement = () => {
                   </table>
                 </div>
 
-                {/* Pagination Section */}
+                {/* Pagination Section with Show Entries */}
                 {currentItems.length > 0 && (
                   <div className="d-flex justify-content-between align-items-center mt-4">
+                    <div className="d-flex align-items-center">
+                      <span className="me-2">Show</span>
+                      <select
+                        className="form-select form-select-sm"
+                        value={itemsPerPage}
+                        onChange={handleRowsPerPageChange}
+                        style={{ width: 'auto' }}
+                      >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                      <span className="ms-2">entries</span>
+                    </div>
                     <div>
                       Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, sortedUsers.length)} of {sortedUsers.length} entries
                     </div>

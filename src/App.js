@@ -21,11 +21,15 @@ import ProductManagement from './productScreens/Products.js';
 import BillingManagement from './productScreens/Billing.js';
 import ReportsManagement from './productScreens/Reports.js';
 import UserManagement from './productScreens/UserManagement.js';
+import ImageManagement from './pages/ImageManagement.js';
+import BackToTop from './components/BackToTop.js';
+import ForgotPassword from './pages/ForgotPassword.js';
 
 const AppContent = () => {
   const location = useLocation();
   const isDashboard = location.pathname === '/dashboard' || location.pathname === '/customer' || location.pathname === '/staff' || location.pathname === '/addServices'
-  || location.pathname === '/appointment'  || location.pathname === '/products' || location.pathname === '/billing'  || location.pathname === '/reports'  || location.pathname === '/users';
+  || location.pathname === '/appointment'  || location.pathname === '/products' || location.pathname === '/billing'  || 
+  location.pathname === '/reports'  || location.pathname === '/users'  || location.pathname === '/imagemanagement';
   
   return (
     <div style={{minHeight: "100vh", display: "flex", flexDirection: "column"}}>
@@ -54,8 +58,11 @@ const AppContent = () => {
         <Route path="/billing" element={<BillingManagement />} />
         <Route path="/reports" element={<ReportsManagement />} />
         <Route path="/users" element={<UserManagement />} />
+        <Route path="/imagemanagement" element={<ImageManagement/>} />
+        <Route path="/forgot-password" element={<ForgotPassword/>}/>
       </Routes>
-      {!isDashboard && <Footer />}
+      {!isDashboard && <Footer /> && <BackToTop/>}
+
     </div>
   );
 };
