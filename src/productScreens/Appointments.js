@@ -597,6 +597,31 @@ const OutlookCalendar = () => {
                                     >
                                         Today
                                     </button>
+                                    <div className="col-md-6">
+                                    <div className="form-floating">
+                                        <select
+                                            className="form-select bg-transparent text-light"
+                                            id="staff"
+                                            value={selectedStaff?._id || ''}
+                                            onChange={(e) => {
+                                                const staffMember = staff.find(s => s._id === e.target.value);
+                                                setSelectedStaff(staffMember);
+                                            }}
+                                        >
+                                            <option value="">Select a staff member</option>
+                                            {staff.map(staffMember => (
+                                                <option key={staffMember._id} value={staffMember._id} className="bg-dark">
+                                                    {staffMember.firstName} {staffMember.lastName}
+                                                    {staffMember.specialization ? ` - ${staffMember.specialization}` : ''}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <label className="text-light">
+                                            <User className="me-2" size={16} />
+                                            Staff Member *
+                                        </label>
+                                    </div>
+                                </div>
                                 </div>
                                 <div className="btn-group">
                                     <button
