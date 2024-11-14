@@ -358,7 +358,7 @@ const Dashboard = () => {
                             label={(entry) => entry.name}
                           >
                             {dashboardData.charts.topProducts?.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                              <Cell key={`cell-${index}`} fill={colors[index % colors.length]} fontSize={10} />
                             ))}
                           </Pie>
                           <Tooltip contentStyle={{ backgroundColor: '#343a40', border: 'none' }} />
@@ -388,7 +388,7 @@ const Dashboard = () => {
                             label={(entry) => entry.name}
                           >
                             {dashboardData.charts.serviceDistribution?.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                              <Cell key={`cell-${index}`} fill={colors[index % colors.length]} fontSize={10} />
                             ))}
                           </Pie>
                           <Tooltip 
@@ -425,7 +425,7 @@ const Dashboard = () => {
                             label={(entry) => entry.name}
                           >
                             {dashboardData.charts.topCustomers?.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                              <Cell key={`cell-${index}`} fill={colors[index % colors.length]} fontSize={10}/>
                             ))}
                           </Pie>
                           <Tooltip 
