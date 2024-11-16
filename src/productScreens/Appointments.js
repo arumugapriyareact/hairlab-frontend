@@ -23,6 +23,8 @@ const localizer = dateFnsLocalizer({
     locales,
 });
 
+
+
 const BookingModal = ({
     showBookingModal,
     setShowBookingModal,
@@ -493,7 +495,7 @@ const OutlookCalendar = () => {
         <div
             className="p-1 position-relative"
             style={{
-                backgroundColor: event.status === 'confirmed' ? '#0d6efd' : '#6610f2',
+                backgroundColor: '#ff0000', // Changed to red
                 color: 'white',
                 borderRadius: '4px',
                 height: '100%'
@@ -742,35 +744,39 @@ const OutlookCalendar = () => {
 // Styles
 const styles = `
     .rbc-calendar {
-        background-color: white;
+        background-color: black !important;
         padding: 1rem;
         border-radius: 0.5rem;
+        color: white !important;
     }
 
     .rbc-toolbar {
         padding: 0.5rem;
         margin-bottom: 1rem;
+        color: white !important;
     }
 
     .rbc-toolbar button {
-        color: #6c757d;
-        background-color: transparent;
-        border: 1px solid #dee2e6;
+        color: white;
+        background-color: #1a1a1a;
+        border: 1px solid #333;
     }
 
     .rbc-toolbar button:hover {
-        background-color: #f8f9fa;
+        background-color: #333;
     }
 
     .rbc-toolbar button.rbc-active {
-        background-color: #0d6efd;
+        background-color: #ff0000;
         color: white;
     }
 
     .rbc-header {
         padding: 0.5rem;
         font-weight: 500;
-        background-color: #f8f9fa;
+        background-color: #1a1a1a;
+        color: white !important;
+        border-bottom: 1px solid #333 !important;
     }
 
     .rbc-event {
@@ -788,13 +794,50 @@ const styles = `
     }
 
     .rbc-today {
-        background-color: #e9ecef !important;
+        background-color: #1a1a1a !important;
+    }
+
+    .rbc-off-range-bg {
+        background-color: #0a0a0a !important;
+    }
+
+    .rbc-time-view {
+        background-color: black !important;
+        border: 1px solid #333 !important;
+    }
+
+    .rbc-time-content {
+        border-top: 1px solid #333 !important;
+    }
+
+    .rbc-timeslot-group {
+        border-bottom: 1px solid #333 !important;
+    }
+
+    .rbc-time-slot {
+        color: white !important;
+    }
+
+    .rbc-day-bg + .rbc-day-bg {
+        border-left: 1px solid #333 !important;
+    }
+
+    .rbc-month-row + .rbc-month-row {
+        border-top: 1px solid #333 !important;
+    }
+
+    .rbc-time-header-content {
+        border-left: 1px solid #333 !important;
+    }
+
+    .rbc-time-content > * + * > * {
+        border-left: 1px solid #333 !important;
     }
 
     .form-floating > .form-control,
     .form-floating > .form-select {
-        background-color: #343a40 !important;
-        border-color: #495057;
+        background-color: black !important;
+        border-color: #333;
         color: white !important;
     }
 
@@ -808,28 +851,33 @@ const styles = `
 
     .form-floating > .form-control:focus,
     .form-floating > .form-select:focus {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        border-color: #ff0000;
+        box-shadow: 0 0 0 0.25rem rgba(255, 0, 0, 0.25);
     }
 
     .form-floating > .form-select option {
-        background-color: #343a40;
+        background-color: black;
         color: white;
     }
 
     .modal-content {
-        background-color: #212529;
+        background-color: black;
         color: white;
     }
 
     .modal-header {
-        border-bottom-color: #495057;
-        background-color:#343a40 !important
+        border-bottom-color: #333;
+        background-color: black !important;
     }
 
-    // .bg-secondary {
-    //     background-color: #343a40 !important;
-    // }
+    .bg-secondary {
+        background-color: black !important;
+    }
+
+    .card {
+        background-color: black !important;
+        border-color: #333 !important;
+    }
 
     @media (max-width: 768px) {
         .rbc-toolbar {
@@ -849,10 +897,6 @@ const styles = `
 
         .btn-group {
             width: 100%;
-        }
-
-        .btn-group .btn {
-            flex: 1;
         }
 
         .btn-group .btn {
