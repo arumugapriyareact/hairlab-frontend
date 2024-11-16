@@ -498,14 +498,16 @@ const OutlookCalendar = () => {
                 backgroundColor: '#ff0000', // Changed to red
                 color: 'white',
                 borderRadius: '4px',
-                height: '100%'
+                height: '200px',
+                flex:'none !important'
             }}
         >
-            <div className="d-flex justify-content-between align-items-start">
-                <div className="fw-semibold">{event.title}</div>
+            <div className="d-flex justify-content-between align-items-start" style={{height:"200px !important"}}>
+                {/* <div className="fw-semibold">{event.title}</div> */}
+                {`${event.staff.firstName} ${event.staff.lastName}`}
                 <div className="btn-group btn-group-sm">
                     <button
-                        className="btn btn-sm btn-light opacity-75"
+                        className="btn btn-sm btn-light opacity-75 "
                         onClick={(e) => {
                             e.stopPropagation();
                             setSelectedEvent(event);
@@ -520,6 +522,7 @@ const OutlookCalendar = () => {
                             if (event.notes) setNotes(event.notes);
                             setShowBookingModal(true);
                         }}
+                        style={{height: "100px"}}
                     >
                         <i className="fas fa-edit"></i>
                     </button>
@@ -551,6 +554,7 @@ const OutlookCalendar = () => {
                 </div>
             )}
         </div>
+       
     );
 
     const toggleSidebar = () => {
@@ -877,6 +881,10 @@ const styles = `
     .card {
         background-color: black !important;
         border-color: #333 !important;
+    }
+
+    .rbc-event-label{
+        display: none !important;
     }
 
     @media (max-width: 768px) {
